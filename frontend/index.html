@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Community Connect</title>
+<style>
+:root{--navy:#173d70;--blue:#3478c8;--mint:#e2f5ec;--purple:#e8edff;--bg:#f4f7fb;--text:#1e293b;--muted:#64748b;--border:#dbe3ef;--white:#fff;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.hidden{display:none!important}.screen{min-height:100vh}
+/* AUTH */
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#e8f1ff,#f6fbff)}
+.login-card{background:white;width:min(430px,100%);padding:32px;border-radius:20px;box-shadow:0 18px 55px #173d701a}
+.brand{display:flex;align-items:center;gap:12px;color:var(--navy);font-size:24px;font-weight:800;margin-bottom:8px}
+.brand-icon{display:grid;place-items:center;background:var(--navy);color:white;border-radius:13px;width:48px;height:48px;font-size:25px}
+.sub{color:var(--muted);line-height:1.5;margin:8px 0 24px}
+.field{display:flex;flex-direction:column;gap:7px;margin:14px 0}
+.field label{font-size:14px;font-weight:700}
+.field input,.field select,.field textarea{width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:10px;background:white;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #3478c81c}
+.field textarea{min-height:100px;resize:vertical}
+.btn{border:0;border-radius:10px;padding:12px 16px;background:var(--navy);color:white;font-weight:700}
+.btn:hover{filter:brightness(1.08)}.btn.secondary{background:#e8eef8;color:var(--navy)}
+.btn.green{background:#147d56}.btn.purple{background:#354db4}.btn.danger{background:var(--red)}.btn.small{padding:8px 11px;font-size:13px}
+.auth-toggle{font-size:13px;color:var(--muted);text-align:center;margin-top:14px}
+.auth-toggle a{color:var(--blue);cursor:pointer;font-weight:700}
+.error-msg{color:var(--red);font-size:13px;background:#fff0f0;border:1px solid #fcc;border-radius:8px;padding:10px;margin-top:10px;display:none}
+/* APP */
+header{background:var(--navy);color:white;padding:14px clamp(16px,4vw,48px);display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header .brand{color:white;margin:0;font-size:21px}header .brand-icon{background:#ffffff24}
+header .right{display:flex;align-items:center;gap:12px;font-size:14px}
+main{max-width:1150px;margin:0 auto;padding:28px 18px 60px}
+.welcome{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;flex-wrap:wrap;margin-bottom:22px}
+.welcome h1{font-size:clamp(25px,4vw,36px);margin:0 0 8px;color:#142f55}.welcome p{color:var(--muted);margin:0}
+.section-title{font-size:20px;margin:26px 0 13px}
+.quick-grid,.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.quick-card,.module-card,.panel,.item-card{background:white;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 5px 18px #173d7008}
+.quick-card{display:flex;gap:15px;align-items:flex-start}
+.tile-icon{width:50px;height:50px;flex:0 0 50px;display:grid;place-items:center;border-radius:14px;background:var(--mint);font-size:25px}
+.tile-icon.blue{background:#e7effb}.tile-icon.purple{background:var(--purple)}
+.quick-card h3,.module-card h3{margin:0 0 7px}
+.quick-card p,.module-card p{color:var(--muted);line-height:1.5;margin:0 0 14px;font-size:14px}
+.module-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.module-card{display:flex;flex-direction:column;align-items:flex-start;min-height:190px}
+.module-card .tile-icon{margin-bottom:13px}.module-card .btn{margin-top:auto}
+.page-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.page-top h1{margin:0;font-size:28px}.page-top p{margin:5px 0 0;color:var(--muted)}
+.back-btn{background:white;border:1px solid var(--border);color:var(--navy);border-radius:10px;padding:10px 13px;font-weight:700}
+.tabs{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}
+.tab{border:1px solid var(--border);background:white;color:var(--navy);padding:10px 14px;border-radius:10px;font-weight:700}
+.tab.active{background:var(--navy);color:white}
+.content-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.panel h2{margin:0 0 14px;font-size:20px}.panel h3{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.span-2{grid-column:1/-1}
+.list{display:flex;flex-direction:column;gap:12px}
+.item-card h3{font-size:17px;margin:0 0 8px}
+.item-card p{margin:6px 0;color:#475569;line-height:1.45;font-size:14px;overflow-wrap:anywhere}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.pill{display:inline-block;border-radius:999px;background:#edf2f8;color:#334155;padding:5px 9px;font-size:12px;font-weight:700}
+.pill.pending{background:#fff1cc;color:#815500}
+.pill.accepted,.pill.resolved,.pill.registered{background:#dcfce7;color:#166534}
+.empty{color:var(--muted);padding:18px;border:1px dashed var(--border);border-radius:12px;text-align:center;font-size:14px}
+.loading{color:var(--muted);padding:18px;text-align:center;font-size:14px}
+.notice{padding:12px 14px;background:#fff7e6;border:1px solid #f4d99b;border-radius:10px;color:#714d00;font-size:13px;line-height:1.5;margin:0 0 16px}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+@media(max-width:850px){.module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.quick-grid,.module-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.span-2{grid-column:auto}.login-card{padding:24px}main{padding-top:20px}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN / REGISTER ══════════════ -->
+<section id="loginScreen" class="screen login-wrap">
+  <div class="login-card">
+    <div class="brand"><span class="brand-icon">🤝</span><span>Community Connect</span></div>
+    <p class="sub">Connect with your neighbours — find services, offer help, and discover community events.</p>
+
+    <!-- Login -->
+    <form id="loginForm">
+      <div class="field"><label for="loginUsername">Username</label><input id="loginUsername" required autocomplete="username" placeholder="Enter your username" /></div>
+      <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Enter your password" /></div>
+      <button class="btn" style="width:100%" type="submit">Login</button>
+      <div id="loginError" class="error-msg"></div>
+    </form>
+    <p class="auth-toggle" id="toRegisterWrap">No account? <a id="toRegister">Register here</a></p>
+
+    <!-- Register -->
+    <form id="registerForm" class="hidden">
+      <div class="field"><label for="regUsername">Username</label><input id="regUsername" required placeholder="Choose a username" /></div>
+      <div class="field"><label for="regPassword">Password</label><input id="regPassword" type="password" required placeholder="At least 6 characters" /></div>
+      <button class="btn green" style="width:100%" type="submit">Create Account</button>
+      <div id="registerError" class="error-msg"></div>
+    </form>
+    <p class="auth-toggle hidden" id="toLoginWrap">Have an account? <a id="toLogin">Login here</a></p>
+  </div>
+</section>
+
+<!-- ══════════════ APP ══════════════ -->
+<section id="appScreen" class="screen hidden">
+  <header>
+    <div class="brand"><span class="brand-icon">🤝</span><span>Community Connect</span></div>
+    <div class="right"><span id="headerUser"></span><button class="btn secondary small" id="logoutBtn">Logout</button></div>
+  </header>
+
+  <main>
+    <!-- Dashboard -->
+    <section id="dashboard">
+      <div class="welcome">
+        <div><h1 id="welcomeTitle">Welcome!</h1><p>Small acts of help make a stronger community.</p></div>
+      </div>
+      <h2 class="section-title">Community Support</h2>
+      <div class="quick-grid">
+        <article class="quick-card">
+          <div class="tile-icon">🙋</div>
+          <div><h3>Request Help</h3><p>Ask community members for help — lost items, emergencies, or services.</p>
+          <button class="btn green" data-open="quick-request">Request Help</button></div>
+        </article>
+        <article class="quick-card">
+          <div class="tile-icon purple">🤝</div>
+          <div><h3>Provide Help</h3><p>Find requests from others, offer assistance, or report a found item.</p>
+          <button class="btn purple" data-open="quick-provide">Provide Help</button></div>
+        </article>
+      </div>
+      <h2 class="section-title">Modules</h2>
+      <div class="module-grid">
+        <article class="module-card"><div class="tile-icon blue">🛠️</div><h3>Services</h3><p>Request or provide local services.</p><button class="btn" data-open="services">Open</button></article>
+        <article class="module-card"><div class="tile-icon">🚨</div><h3>Help &amp; Emergency</h3><p>Send or respond to urgent help requests.</p><button class="btn danger" data-open="emergency">Open</button></article>
+        <article class="module-card"><div class="tile-icon">🔎</div><h3>Lost &amp; Found</h3><p>Report lost items or share found ones.</p><button class="btn green" data-open="lostfound">Open</button></article>
+        <article class="module-card"><div class="tile-icon purple">📅</div><h3>Events</h3><p>Discover and publish community events.</p><button class="btn purple" data-open="events">Open</button></article>
+      </div>
+    </section>
+
+    <!-- Module Page -->
+    <section id="modulePage" class="hidden">
+      <div class="page-top">
+        <button class="back-btn" id="backBtn">← Back</button>
+        <div><h1 id="pageTitle"></h1><p id="pageSubtitle"></p></div>
+      </div>
+      <div id="pageContent"></div>
+    </section>
+  </main>
+
+  <footer>Community Connect · Powered by Node.js + MongoDB</footer>
+</section>
+
+<script src="config.js"></script>
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────
+// In production this is replaced by your Render backend URL
+// e.g. https://community-connect-api.onrender.com/api
+const API = window.API_URL || "http://localhost:5000/api";
+
+// ── STATE ─────────────────────────────────────────────────────────────
+let currentUser = "";
+let authToken   = "";
+let activePage  = "dashboard";
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+const $   = (id) => document.getElementById(id);
+const esc = (v = "") => String(v).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const opts = (arr) => arr.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("");
+
+function authHeaders() {
+  return { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` };
+}
+
+async function api(method, path, body) {
+  const res  = await fetch(API + path, {
+    method,
+    headers: authHeaders(),
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Request failed");
+  return data;
+}
+
+function showErr(id, msg) { const el=$(id); el.textContent=msg; el.style.display="block"; }
+function clearErr(id)     { const el=$(id); if(el){ el.textContent=""; el.style.display="none"; } }
+
+// ── CATEGORIES ────────────────────────────────────────────────────────
+const CAT = {
+  services:  ["Plumber","Electrician","Carpenter","Cleaner","Painter","Appliance repair","Other"],
+  emergency: ["Medical assistance","Fire or safety concern","Transport assistance","Missing person","Other urgent help"],
+  events:    ["Community meeting","Festival","Workshop","Sports","Blood donation camp","Clean-up drive","Other"],
+};
+
+// ── FIELD BUILDERS ────────────────────────────────────────────────────
+const fld  = (lbl,id,ph="",type="text",req=true) =>
+  `<div class="field"><label for="${id}">${lbl}${req?" *":""}</label><input id="${id}" name="${id}" type="${type}" placeholder="${ph}" ${req?"required":""}></div>`;
+const sel  = (lbl,id,items) =>
+  `<div class="field"><label for="${id}">${lbl} *</label><select id="${id}" name="${id}" required><option value="">Choose…</option>${opts(items)}</select></div>`;
+const ta   = (lbl,id,ph,req=true) =>
+  `<div class="field span-2"><label for="${id}">${lbl}${req?" *":""}</label><textarea id="${id}" name="${id}" placeholder="${ph}" ${req?"required":""}></textarea></div>`;
+const date = (lbl,id,req=false) =>
+  `<div class="field"><label for="${id}">${lbl}${req?" *":""}</label><input id="${id}" name="${id}" type="date" ${req?"required":""}></div>`;
+const dtl  = (lbl,id,req=false) =>
+  `<div class="field"><label for="${id}">${lbl}${req?" *":""}</label><input id="${id}" name="${id}" type="datetime-local" ${req?"required":""}></div>`;
+
+// ── PAGE HTML ─────────────────────────────────────────────────────────
+function servicesHTML() {
+  return `<div class="content-grid">
+    <div class="panel"><h2>Request a Service</h2>
+      <form id="serviceForm"><div class="form-grid">
+        ${sel("Service type","serviceType",CAT.services)}
+        ${fld("Your name","requesterName",currentUser)}
+        ${ta("Description","serviceDesc","Describe what you need.",false)}
+        ${fld("Location","serviceLocation","Area / street / landmark")}
+        ${dtl("Preferred date & time","servicePreferred",false)}
+        <div class="span-2">${fld("Contact details","serviceContact","Phone or email")}</div>
+      </div><button class="btn" type="submit">Send Request</button></form>
+    </div>
+    <div class="panel"><h2>My Requests</h2><div id="myServiceList" class="list"><div class="loading">Loading…</div></div></div>
+  </div>`;
+}
+
+function emergencyHTML() {
+  return `<div class="notice">⚠️ If someone is in immediate danger, contact your local emergency services first. This does not send real emergency alerts.</div>
+  <div class="content-grid">
+    <div class="panel"><h2>Send a Help Request</h2>
+      <form id="emergencyForm"><div class="form-grid">
+        ${sel("Request type","emergencyType",CAT.emergency)}
+        ${fld("Your name","emergencyName",currentUser)}
+        ${ta("Describe the situation","emergencyDesc","Explain what help is needed.")}
+        ${fld("Location","emergencyLocation","Area / landmark")}
+        <div class="span-2">${fld("Contact details","emergencyContact","Phone or email")}</div>
+      </div><button class="btn danger" type="submit">Send Help Request</button></form>
+    </div>
+    <div class="panel"><h2>My Requests</h2><div id="myEmergencyList" class="list"><div class="loading">Loading…</div></div></div>
+  </div>
+  <div class="panel" style="margin-top:18px"><h2>Community Requests</h2><p style="color:var(--muted);font-size:14px">Accept a request if you can safely help.</p>
+    <div id="allEmergencyList" class="list"><div class="loading">Loading…</div></div>
+  </div>`;
+}
+
+function lostFoundHTML(tab) {
+  const isLost = tab === "lost";
+  return `
+  <div class="tabs">
+    <button class="tab ${isLost?"active":""}" data-lf-tab="lost">Lost Items</button>
+    <button class="tab ${!isLost?"active":""}" data-lf-tab="found">Found Items</button>
+  </div>
+  <div class="content-grid">
+    <div class="panel"><h2>${isLost?"Report Lost Item":"Report Found Item"}</h2>
+      <form id="${isLost?"lostForm":"foundForm"}"><div class="form-grid">
+        ${fld("Item name","itemName","e.g. blue backpack")}
+        ${ta("Description","itemDesc","Colour, brand, identifying features…")}
+        ${fld(isLost?"Last-seen location":"Found location","itemLocation","Area / landmark")}
+        ${date(isLost?"Date last seen":"Date found","itemDate",false)}
+        <div class="span-2">${fld("Contact details","itemContact","Phone or email")}</div>
+      </div><button class="btn ${isLost?"green":"purple"}" type="submit">Submit Report</button></form>
+    </div>
+    <div class="panel"><h2>${isLost?"Lost Item Reports":"Found Item Reports"}</h2>
+      <div id="${isLost?"lostList":"foundList"}" class="list"><div class="loading">Loading…</div></div>
+    </div>
+  </div>`;
+}
+
+function eventsHTML() {
+  return `<div class="tabs">
+    <button class="tab active" data-ev-tab="browse">Upcoming Events</button>
+    <button class="tab" data-ev-tab="create">Create Event</button>
+  </div>
+  <div id="eventsTabContent"></div>`;
+}
+
+function eventBrowseHTML()  { return `<div class="panel"><h2>Community Events</h2><div id="eventList" class="list"><div class="loading">Loading…</div></div></div>`; }
+function eventCreateHTML()  {
+  return `<div class="panel"><h2>Publish an Event</h2>
+    <form id="eventForm"><div class="form-grid">
+      ${fld("Event name","eventName","e.g. Community clean-up")}
+      ${sel("Category","eventCategory",CAT.events)}
+      ${ta("Description","eventDesc","What will happen at this event?")}
+      ${fld("Venue / location","eventLocation","Address or meeting point")}
+      ${dtl("Date and time","eventDate",true)}
+      ${fld("Organizer name","organizer",currentUser)}
+      ${fld("Contact / registration","eventContact","Email, phone, or link","text",false)}
+    </div><button class="btn" type="submit">Publish Event</button></form>
+  </div>`;
+}
+
+function quickRequestHTML() {
+  return `<div class="panel"><h2>What kind of help do you need?</h2>
+  <div class="quick-grid" style="margin-top:16px">
+    <article class="item-card"><h3>🚨 Emergency Help</h3><p>Request urgent assistance from the community.</p><button class="btn danger" data-open="emergency">Request Emergency Help</button></article>
+    <article class="item-card"><h3>🔎 Lost Item</h3><p>Report an item you have lost.</p><button class="btn green" data-open="lostfound">Report Lost Item</button></article>
+    <article class="item-card"><h3>🛠️ Service</h3><p>Request a local service from a neighbour.</p><button class="btn" data-open="services">Request a Service</button></article>
+  </div></div>`;
+}
+
+function quickProvideHTML() {
+  return `<div class="panel"><h2>Choose a category to help with</h2>
+  <div class="tabs" style="margin-top:16px">
+    <button class="tab active" data-pt="emergency">Emergency</button>
+    <button class="tab" data-pt="services">Services</button>
+    <button class="tab" data-pt="lostfound">Lost &amp; Found</button>
+    <button class="tab" data-pt="events">Events</button>
+  </div>
+  <div id="provideContent"></div></div>`;
+}
+
+// ── CARD RENDERER ─────────────────────────────────────────────────────
+function card(x, kind, showAccept = false) {
+  let details = "";
+  if (kind === "service")
+    details = `<p><b>Service:</b> ${esc(x.serviceType)}</p><p><b>Description:</b> ${esc(x.description||"—")}</p><p><b>Location:</b> ${esc(x.location)}</p><p><b>Preferred time:</b> ${esc(x.preferred||"Not specified")}</p><p><b>Contact:</b> ${esc(x.contact)}</p>`;
+  if (kind === "emergency")
+    details = `<p><b>Type:</b> ${esc(x.emergencyType)}</p><p><b>Situation:</b> ${esc(x.description)}</p><p><b>Location:</b> ${esc(x.location)}</p><p><b>Contact:</b> ${esc(x.contact)}</p>`;
+  if (kind === "lost" || kind === "found")
+    details = `<p>${esc(x.description)}</p><p><b>${kind==="lost"?"Last seen":"Found at"}:</b> ${esc(x.location)}</p><p><b>Date:</b> ${esc(x.date||"Not specified")}</p><p><b>Contact:</b> ${esc(x.contact)}</p>`;
+  if (kind === "event")
+    details = `<p><b>Category:</b> ${esc(x.eventCategory)}</p><p>${esc(x.description)}</p><p><b>When:</b> ${esc(x.date)}</p><p><b>Where:</b> ${esc(x.location)}</p><p><b>Organizer:</b> ${esc(x.organizer)}</p><p><b>Contact:</b> ${esc(x.contact||"—")}</p><p><b>Attendees:</b> ${(x.attendees||[]).length}</p>`;
+
+  const statusStr   = kind === "event" ? ((x.attendees||[]).includes(currentUser) ? "Registered" : "Open") : (x.status || "Pending");
+  const statusClass = statusStr.toLowerCase();
+  const title       = x.serviceType || x.emergencyType || x.itemName || x.eventName || "Item";
+  const postedAt    = x.createdAt ? new Date(x.createdAt).toLocaleString() : "";
+
+  let action = "";
+  if (showAccept && kind !== "event" && kind !== "found") {
+    if (x.status === "Pending" && x.owner !== currentUser)
+      action = `<button class="btn purple small" style="margin-top:10px" data-accept="${esc(x._id)}" data-kind="${kind}">Accept Request</button>`;
+    else if (x.status === "Accepted")
+      action = `<p style="margin-top:10px"><b>Accepted by:</b> ${esc(x.acceptedBy)}</p>`;
+  }
+  if (kind === "found" && x.owner === currentUser) {
+    action = `<div style="margin-top:12px"><label style="font-weight:600;font-size:14px">Status:
+      <select data-found-status="${esc(x._id)}" style="margin-left:8px">
+        <option value="Pending"  ${x.status!=="Resolved"?"selected":""}>Pending</option>
+        <option value="Resolved" ${x.status==="Resolved"?"selected":""}>Resolved</option>
+      </select></label></div>`;
+  }
+  if (kind === "event") {
+    const registered = (x.attendees||[]).includes(currentUser);
+    action = `<button class="btn small ${registered?"secondary":""}" style="margin-top:10px" data-register="${esc(x._id)}">${registered?"✓ Registered":"Register Interest"}</button>`;
+  }
+
+  return `<article class="item-card">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <h3>${esc(title)}</h3><span class="pill ${statusClass}">${esc(statusStr)}</span>
+    </div>
+    <p><b>By:</b> ${esc(x.owner || x.organizer || "")}</p>
+    ${details}
+    <div class="meta"><span class="pill">${esc(postedAt)}</span></div>
+    ${action}
+  </article>`;
+}
+
+function renderList(elId, items, kind, showAccept = false) {
+  const el = $(elId);
+  if (!el) return;
+  if (!items.length) { el.innerHTML = '<div class="empty">Nothing here yet.</div>'; return; }
+  el.innerHTML = items.map(x => card(x, kind, showAccept)).join("");
+}
+
+// ── DATA LOADERS ──────────────────────────────────────────────────────
+async function load(which) {
+  try {
+    if (which.includes("services")) {
+      const all = await api("GET", "/services");
+      renderList("myServiceList",  all.filter(x => x.owner === currentUser), "service");
+      renderList("provServiceList", all, "service", true);
+    }
+    if (which.includes("emergencies")) {
+      const all = await api("GET", "/emergencies");
+      renderList("myEmergencyList",  all.filter(x => x.owner === currentUser), "emergency");
+      renderList("allEmergencyList", all, "emergency", true);
+      renderList("provEmergencyList", all, "emergency", true);
+    }
+    if (which.includes("lost")) {
+      const all = await api("GET", "/lost");
+      renderList("lostList",     all, "lost");
+      renderList("provLostList", all, "lost", true);
+    }
+    if (which.includes("found")) {
+      const all = await api("GET", "/found");
+      renderList("foundList",     all, "found");
+      renderList("provFoundList", all.filter(x => x.owner === currentUser), "found");
+    }
+    if (which.includes("events")) {
+      const all = await api("GET", "/events");
+      renderList("eventList", all, "event");
+    }
+  } catch (err) {
+    console.error("Load error:", err.message);
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────
+function showPage(page) {
+  activePage = page;
+  $("dashboard").classList.add("hidden");
+  $("modulePage").classList.remove("hidden");
+
+  const map = {
+    services:        ["Services",          "Request or provide a local service."],
+    emergency:       ["Help & Emergency",  "Send an urgent request or help someone else."],
+    lostfound:       ["Lost & Found",      "Report a lost item or share a found one."],
+    events:          ["Events",            "Discover and publish community events."],
+    "quick-request": ["Request Help",      "Tell the community what you need."],
+    "quick-provide": ["Provide Help",      "Browse requests and offer assistance."],
+  };
+  $("pageTitle").textContent    = map[page][0];
+  $("pageSubtitle").textContent = map[page][1];
+  $("backBtn").textContent      = (page === "quick-request" || page === "quick-provide") ? "← Dashboard" : "← Dashboard";
+
+  const c = $("pageContent");
+  if (page === "services")       { c.innerHTML = servicesHTML();      load(["services"]); }
+  else if (page === "emergency") { c.innerHTML = emergencyHTML();     load(["emergencies"]); }
+  else if (page === "lostfound") { c.innerHTML = lostFoundHTML("lost"); load(["lost"]); }
+  else if (page === "events")    { c.innerHTML = eventsHTML();        renderEventsTab("browse"); }
+  else if (page === "quick-request") c.innerHTML = quickRequestHTML();
+  else if (page === "quick-provide") { c.innerHTML = quickProvideHTML(); renderProvideTab("emergency"); }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderEventsTab(tab) {
+  $("eventsTabContent").innerHTML = tab === "browse" ? eventBrowseHTML() : eventCreateHTML();
+  document.querySelectorAll("[data-ev-tab]").forEach(b => b.classList.toggle("active", b.dataset.evTab === tab));
+  if (tab === "browse") load(["events"]);
+}
+
+function renderProvideTab(tab) {
+  document.querySelectorAll("[data-pt]").forEach(b => b.classList.toggle("active", b.dataset.pt === tab));
+  const c = $("provideContent");
+  if (tab === "emergency") {
+    c.innerHTML = `<div id="provEmergencyList" class="list" style="margin-top:14px"><div class="loading">Loading…</div></div>`;
+    load(["emergencies"]);
+  } else if (tab === "services") {
+    c.innerHTML = `<div id="provServiceList" class="list" style="margin-top:14px"><div class="loading">Loading…</div></div>`;
+    load(["services"]);
+  } else if (tab === "lostfound") {
+    c.innerHTML = `<div class="content-grid" style="margin-top:14px">
+      <div><h3>Lost item reports</h3><div id="provLostList" class="list"><div class="loading">Loading…</div></div></div>
+      <div>
+        <div class="panel" style="margin-bottom:16px"><h3>Report a found item</h3>
+          <form id="foundForm"><div class="form-grid">
+            ${fld("Item name","itemName","e.g. blue backpack")}
+            ${ta("Description","itemDesc","Colour, brand, features…")}
+            ${fld("Found location","itemLocation","Area / landmark")}
+            ${date("Date found","itemDate",false)}
+            <div class="span-2">${fld("Contact details","itemContact","Phone or email")}</div>
+          </div><button class="btn purple" type="submit">Submit Found Report</button></form>
+        </div>
+        <div class="panel"><h3>My found reports</h3><div id="provFoundList" class="list"><div class="loading">Loading…</div></div></div>
+      </div>
+    </div>`;
+    load(["lost","found"]);
+  } else if (tab === "events") {
+    c.innerHTML = `<div class="tabs" style="margin-top:14px">
+      <button class="tab active" data-pet="browse">View Events</button>
+      <button class="tab" data-pet="create">Create Event</button>
+    </div><div id="provEventsContent"></div>`;
+    renderProvideEventsTab("browse");
+  }
+}
+
+function renderProvideEventsTab(tab) {
+  const c = $("provEventsContent"); if (!c) return;
+  c.innerHTML = tab === "browse" ? eventBrowseHTML() : eventCreateHTML();
+  document.querySelectorAll("[data-pet]").forEach(b => b.classList.toggle("active", b.dataset.pet === tab));
+  if (tab === "browse") load(["events"]);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+function onAuth(token, username) {
+  authToken   = token;
+  currentUser = username;
+  $("headerUser").textContent   = "Signed in as " + username;
+  $("welcomeTitle").textContent = "Welcome, " + username + "!";
+  $("loginScreen").classList.add("hidden");
+  $("appScreen").classList.remove("hidden");
+}
+
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault(); clearErr("loginError");
+  const username = $("loginUsername").value.trim();
+  const password = $("loginPassword").value;
+  try {
+    const res  = await fetch(`${API}/auth/login`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({username, password}) });
+    const data = await res.json();
+    if (!res.ok) return showErr("loginError", data.message || "Login failed.");
+    onAuth(data.token, data.username);
+  } catch {
+    showErr("loginError", "Cannot reach server. Make sure the backend is running on port 5000.");
+  }
+});
+
+$("registerForm").addEventListener("submit", async e => {
+  e.preventDefault(); clearErr("registerError");
+  const username = $("regUsername").value.trim();
+  const password = $("regPassword").value;
+  try {
+    const res  = await fetch(`${API}/auth/register`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({username, password}) });
+    const data = await res.json();
+    if (!res.ok) return showErr("registerError", data.message || "Registration failed.");
+    onAuth(data.token, data.username);
+  } catch {
+    showErr("registerError", "Cannot reach server. Make sure the backend is running on port 5000.");
+  }
+});
+
+$("toRegister").addEventListener("click", () => {
+  $("loginForm").classList.add("hidden");
+  $("toRegisterWrap").classList.add("hidden");
+  $("registerForm").classList.remove("hidden");
+  $("toLoginWrap").classList.remove("hidden");
+});
+$("toLogin").addEventListener("click", () => {
+  $("registerForm").classList.add("hidden");
+  $("toLoginWrap").classList.add("hidden");
+  $("loginForm").classList.remove("hidden");
+  $("toRegisterWrap").classList.remove("hidden");
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  try { await api("POST", "/auth/logout"); } catch {}
+  authToken = ""; currentUser = "";
+  $("appScreen").classList.add("hidden");
+  $("loginScreen").classList.remove("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("modulePage").classList.add("hidden");
+  $("loginPassword").value = "";
+  activePage = "dashboard";
+});
+
+$("backBtn").addEventListener("click", () => {
+  $("modulePage").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  activePage = "dashboard";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// ── CLICK DELEGATION ──────────────────────────────────────────────────
+document.addEventListener("click", async e => {
+  // open page
+  const openBtn = e.target.closest("[data-open]");
+  if (openBtn) { showPage(openBtn.dataset.open); return; }
+
+  // lost/found tab
+  const lfTab = e.target.closest("[data-lf-tab]");
+  if (lfTab) {
+    $("pageContent").innerHTML = lostFoundHTML(lfTab.dataset.lfTab);
+    load([lfTab.dataset.lfTab]);
+    return;
+  }
+
+  // events tab
+  const evTab = e.target.closest("[data-ev-tab]");
+  if (evTab) { renderEventsTab(evTab.dataset.evTab); return; }
+
+  // provide tab
+  const pt = e.target.closest("[data-pt]");
+  if (pt) { renderProvideTab(pt.dataset.pt); return; }
+
+  // provide events tab
+  const pet = e.target.closest("[data-pet]");
+  if (pet) { renderProvideEventsTab(pet.dataset.pet); return; }
+
+  // accept request
+  const acceptBtn = e.target.closest("[data-accept]");
+  if (acceptBtn) {
+    const id   = acceptBtn.dataset.accept;
+    const kind = acceptBtn.dataset.kind;
+    const path = kind === "service" ? `/services/${id}/accept`
+               : kind === "lost"    ? `/lost/${id}/accept`
+               :                      `/emergencies/${id}/accept`;
+    try {
+      await api("PATCH", path);
+      if (kind === "service")   load(["services"]);
+      if (kind === "emergency") load(["emergencies"]);
+      if (kind === "lost")      load(["lost"]);
+    } catch (err) { alert("Error: " + err.message); }
+    return;
+  }
+
+  // register for event
+  const regBtn = e.target.closest("[data-register]");
+  if (regBtn) {
+    try {
+      await api("PATCH", `/events/${regBtn.dataset.register}/register`);
+      load(["events"]);
+    } catch (err) { alert("Error: " + err.message); }
+    return;
+  }
+});
+
+// ── CHANGE DELEGATION ─────────────────────────────────────────────────
+document.addEventListener("change", async e => {
+  if (e.target.matches("[data-found-status]")) {
+    try {
+      await api("PATCH", `/found/${e.target.dataset.foundStatus}/status`, { status: e.target.value });
+      load(["found"]);
+    } catch (err) { alert("Error: " + err.message); }
+  }
+});
+
+// ── FORM SUBMISSIONS ──────────────────────────────────────────────────
+document.addEventListener("submit", async e => {
+  const f = e.target;
+  if (!f.id || f.id === "loginForm" || f.id === "registerForm") return;
+  e.preventDefault();
+  const v = Object.fromEntries(new FormData(f).entries());
+
+  try {
+    if (f.id === "serviceForm") {
+      await api("POST", "/services", {
+        serviceType: v.serviceType, description: v.serviceDesc || "",
+        location: v.serviceLocation, preferred: v.servicePreferred || "",
+        contact: v.serviceContact,
+      });
+      f.reset(); load(["services"]);
+    }
+
+    if (f.id === "emergencyForm") {
+      await api("POST", "/emergencies", {
+        emergencyType: v.emergencyType, description: v.emergencyDesc,
+        location: v.emergencyLocation, contact: v.emergencyContact,
+      });
+      f.reset(); load(["emergencies"]);
+    }
+
+    if (f.id === "lostForm") {
+      await api("POST", "/lost", {
+        itemName: v.itemName, description: v.itemDesc,
+        location: v.itemLocation, date: v.itemDate || "", contact: v.itemContact,
+      });
+      f.reset(); load(["lost"]);
+    }
+
+    if (f.id === "foundForm") {
+      await api("POST", "/found", {
+        itemName: v.itemName, description: v.itemDesc,
+        location: v.itemLocation, date: v.itemDate || "", contact: v.itemContact,
+      });
+      f.reset(); load(["found", "lost"]);
+    }
+
+    if (f.id === "eventForm") {
+      await api("POST", "/events", {
+        eventName: v.eventName, eventCategory: v.eventCategory,
+        description: v.eventDesc, location: v.eventLocation,
+        date: v.eventDate, organizer: v.organizer || currentUser,
+        contact: v.eventContact || "",
+      });
+      f.reset();
+      renderEventsTab("browse");
+    }
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+});
+</script>
+</body>
+</html>
